@@ -29,7 +29,11 @@ tid_t
 process_execute (const char *file_name) 
 {
   char *fn_copy;
+  char *fn_inter;
+  char *fn_actual;
+  char **args;
   tid_t tid;
+  int arg_pos = 0;
 
   /* Make a copy of FILE_NAME.
      Otherwise there's a race between the caller and load(). */
@@ -38,8 +42,20 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
+  //Get first word in the argument list
+  fn_actual = strtok_r(fn_copy, " ", &args[arg_pos]);
+
+  //Try to populate the argument list
+  fn_inter = strtok_r(NULL, " ", &args[arg_pos]);
+  while (fn_inter != NULL) {
+    printf("argument[%d]: %s", arg_pos, fn_inter);
+    //args[arg_pos] = fn_inter;
+    ++arg_pos;
+    fn_inter = strtok_r(NULL, " ", &args[arg_pos]);
+  }
+
   /* Create a new thread to execute FILE_NAME. */
-  tid = thread_create (file_name, PRI_DEFAULT, start_process, fn_copy);
+  tid = thread_create (fn_actual, PRI_DEFAULT, start_process, fn_copy);
   if (tid == TID_ERROR)
     palloc_free_page (fn_copy); 
   return tid;
